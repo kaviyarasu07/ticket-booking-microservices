@@ -1,15 +1,13 @@
-package com.ticketbooking.user_auth_service;
+package com.ticketbooking.apigateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-
-public class UserAuthServiceApplication {
+public class ApigatewayApplication {
 
 	public static void main(String[] args) {
-
-        SpringApplication.run(UserAuthServiceApplication.class, args);
+		SpringApplication.run(ApigatewayApplication.class, args);
 	}
 
 }
