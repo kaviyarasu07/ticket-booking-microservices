@@ -33,6 +33,6 @@ public class UserLoginActivity {
     @Column(name = "ip_address", length = 50)
     private String ipAddress;
 
-    @Column(name = "device", length = 100)
+    @Column(name = "device", length = 512)
     private String device;
 }

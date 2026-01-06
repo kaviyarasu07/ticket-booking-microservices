@@ -1,175 +1,157 @@
-import { registerUser } from "../api/authApi";
 import { useState } from "react";
-
+import { useNavigate, Link } from "react-router-dom";
+import { registerUser } from "../services/authApi";
+import { saveToken, getUserFromToken } from "../utils/auth";
+import { redirectByRole } from "../utils/redirect";
+import "../styles.css";
 
 export default function Register() {
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    gender: "",
+    gender: "Male",
     email: "",
     mobile: "",
     password: "",
     role: "CONSUMER",
-    dob: "",
+    dob: ""
   });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  try {
-    const response = await registerUser(formData);
-    console.log("Registration success:", response.data);
-
-    alert("Registration successful!");
-
-    // later: redirect to login or dashboard
-  } catch (error) {
-    console.error("Registration failed:", error);
-
-    alert(
-      error.response?.data?.message ||
-      "Registration failed. Please try again."
-    );
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
-};
 
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await registerUser(form);
+
+      const token = response.data.token;
+      saveToken(token);
+
+      // fallback-safe redirect
+      const role = response.data.role || getUserFromToken()?.role;
+      redirectByRole(role, navigate);
+
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+        "Registration failed"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div style={pageStyle}>
-      <form onSubmit={handleSubmit} style={formStyle}>
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
-          Create Account
-        </h2>
+    <div className="auth-wrapper">
+      <div className="auth-card">
+        <h2>Create Account</h2>
 
-        <input
-          name="firstName"
-          placeholder="First Name"
-          value={formData.firstName}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        />
+        {error && (
+          <p className="text-muted" style={{ color: "#e11d48" }}>
+            {error}
+          </p>
+        )}
 
-        <input
-          name="lastName"
-          placeholder="Last Name"
-          value={formData.lastName}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        />
+        <form onSubmit={handleSubmit}>
+          <input
+            className="input"
+            name="firstName"
+            placeholder="First Name"
+            value={form.firstName}
+            onChange={handleChange}
+            required
+          />
 
-        <select
-          name="gender"
-          value={formData.gender}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        >
-          <option value="">Select Gender</option>
-          <option value="MALE">Male</option>
-          <option value="FEMALE">Female</option>
-          <option value="OTHER">Other</option>
-        </select>
+          <input
+            className="input"
+            name="lastName"
+            placeholder="Last Name"
+            value={form.lastName}
+            onChange={handleChange}
+            required
+          />
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        />
+          <select
+            className="select"
+            name="gender"
+            value={form.gender}
+            onChange={handleChange}
+          >
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
 
-        <input
-          name="mobile"
-          placeholder="Mobile Number"
-          value={formData.mobile}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        />
+          <input
+            className="input"
+            name="email"
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
 
-        <input
-          type="date"
-          name="dob"
-          value={formData.dob}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        />
+          <input
+            className="input"
+            name="mobile"
+            placeholder="Mobile Number"
+            value={form.mobile}
+            onChange={handleChange}
+            required
+          />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          style={inputStyle}
-        />
+          <input
+            className="input"
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
 
-        <select
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          style={inputStyle}
-        >
-          <option value="CONSUMER">Consumer</option>
-          <option value="ORGANISER_EVENT">Event Organizer</option>
-          <option value="ORGANISER_THEATRE">Theatre Owner</option>
-        </select>
+          <select
+            className="select"
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+          >
+            <option value="CONSUMER">User</option>
+            <option value="EVENT_ORGANIZER">Event Organizer</option>
+            <option value="THEATRE_OWNER">Theatre Owner</option>
+          </select>
 
-        <button type="submit" style={buttonStyle}>
-          Register
-        </button>
-      </form>
+          <input
+            className="input"
+            type="date"
+            name="dob"
+            value={form.dob}
+            onChange={handleChange}
+          />
+
+          <button className="btn btn-primary" disabled={loading}>
+            {loading ? "Creating account..." : "Register"}
+          </button>
+        </form>
+
+        <p className="text-muted" style={{ textAlign: "center", marginTop: "12px" }}>
+          Already have an account?{" "}
+          <Link to="/login" style={{ color: "#e11d48" }}>
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
-
-/* ---------- styles ---------- */
-
-const pageStyle = {
-  minHeight: "100vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  backgroundColor: "#f5f5f5",
-};
-
-const formStyle = {
-  width: "380px",
-  padding: "24px",
-  background: "white",
-  borderRadius: "8px",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "10px",
-  marginBottom: "14px",
-  borderRadius: "4px",
-  border: "1px solid #ccc",
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "12px",
-  backgroundColor: "#111",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-  fontSize: "16px",
-  cursor: "pointer",
-};

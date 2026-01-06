@@ -50,9 +50,9 @@ public class UserEntity {
     @Column(name = "password", nullable = false, length = 200)
     private String password;
 
-    @Enumerated(EnumType.STRING)
+
     @Column(name = "role", nullable = false, length = 20)
-    private UserRole role;
+    private String role;
 
     @Column(name = "dob")
     private LocalDate dob;
