@@ -1,9 +1,6 @@
 export function redirectByRole(role, navigate) {
-  if (role === "EVENT_ORGANIZER") {
-    navigate("/organizer", { replace: true });
-  } else if (role === "THEATRE_OWNER") {
-    navigate("/theatre", { replace: true });
-  } else {
-    navigate("/", { replace: true }); // CONSUMER
-  }
+  if (role === "ADMIN") navigate("/admin");
+  else if (role === "ORGANIZER") navigate("/organizer");
+  else if (role === "THEATER") navigate("/theater");
+  else navigate("/");
 }
